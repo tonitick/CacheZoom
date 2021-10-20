@@ -130,7 +130,7 @@ enclave {
          *      size_t get_buf_len(const char* buf); 
          */
 
-        public void ecall_pointer_sizefunc([sizefunc = get_buffer_len, in, out] char *buf);
+        public void ecall_pointer_sizefunc([size=total, in, out] char *buf, uint64_t total);
 
     };
 

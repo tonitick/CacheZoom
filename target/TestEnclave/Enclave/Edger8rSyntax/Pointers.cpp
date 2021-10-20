@@ -196,19 +196,19 @@ void ecall_pointer_isptr_readonly(buffer_t buf, size_t len)
 /* get_buffer_len:
  *   get the length of input buffer 'buf'.
  */
-size_t get_buffer_len(const char* buf)
-{
-    (void)buf;
-    return 10*sizeof(int);
-}
+// size_t get_buffer_len(const char* buf)
+// {
+//     (void)buf;
+//     return 10*sizeof(int);
+// }
 
 /* ecall_pointer_sizefunc:
  *   call get_buffer_len to determin the length of 'buf'.
  */
-void ecall_pointer_sizefunc(char *buf)
+void ecall_pointer_sizefunc(char *buf, uint64_t total)
 {
     int *tmp = (int*)buf;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < total; i++) {
         assert(tmp[i] == 0);
         tmp[i] = i;
     }
