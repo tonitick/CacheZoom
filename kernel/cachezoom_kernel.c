@@ -129,7 +129,7 @@ struct file * file_open(const char* path, int flags, int rights)
   int err = 0;
 
   oldfs = get_fs();
-  set_fs(get_ds());
+  set_fs(KERNEL_DS);
   filp = filp_open(path, flags, rights);
   set_fs(oldfs);
   if(IS_ERR(filp)) {
@@ -145,7 +145,7 @@ int file_write(struct file* file, unsigned long long offset, unsigned char* data
   int ret;
 
   oldfs = get_fs();
-  set_fs(get_ds());
+  set_fs(KERNEL_DS);
 
   ret = vfs_write(file, data, size, &offset);
 
