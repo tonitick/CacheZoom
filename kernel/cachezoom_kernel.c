@@ -147,7 +147,7 @@ int file_write(struct file* file, unsigned long long offset, unsigned char* data
   oldfs = get_fs();
   set_fs(KERNEL_DS);
 
-  ret = vfs_write(file, data, size, &offset);
+  ret = kernel_write(file, data, size, &offset);
 
   set_fs(oldfs);
   return ret;
