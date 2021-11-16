@@ -230,20 +230,30 @@ static long cachezoom_ioctl_uninstall_timer(struct file *filep,
 static long cachezoom_ioctl_test(struct file *filep,
   unsigned int cmd, unsigned long arg)
 {
+  printk("[cachezoom_ioctl_test] begin\n");
+
   register int _CURRENT_SET_;
   asm(".align 64");
-  for(_CURRENT_SET_ = 0; _CURRENT_SET_ < CPU_L1_CACHE_SET_COUNT; _CURRENT_SET_++)
+  for(_CURRENT_SET_ = 0; _CURRENT_SET_ < CPU_L1_CACHE_SET_COUNT; _CURRENT_SET_++) {
+    printk(KERN_INFO "[cachezoom_ioctl_test] prime set %u\n", _CURRENT_SET_);
     prime(_SPY_POINTER_LIST_, _CURRENT_SET_);
-  
+  }
+
+  printk("[cachezoom_ioctl_test] prime end\n");
+
   asm volatile(".align 64");
 
-  for(_CURRENT_SET_ = 0; _CURRENT_SET_ < CPU_L1_CACHE_SET_COUNT; _CURRENT_SET_++)
+  for(_CURRENT_SET_ = 0; _CURRENT_SET_ < CPU_L1_CACHE_SET_COUNT; _CURRENT_SET_++) {
+    printk(KERN_INFO "[cachezoom_ioctl_test] probe set %u\n", _CURRENT_SET_);
     probe(_SPY_POINTER_LIST_, _CURRENT_SET_);
+  }
+
+  printk("[cachezoom_ioctl_test] probe end\n");
 
   for(_CURRENT_SET_ = 0; _CURRENT_SET_ < CPU_L1_CACHE_SET_COUNT; _CURRENT_SET_++){
     printk(KERN_ALERT "%d: %d\n", _CURRENT_SET_, *(_SPY_POINTER_LIST_ + idx0(_CURRENT_SET_) + 2));
   }
-  
+
   printk("............................................................\n"); 
   return 0;
 }
@@ -258,6 +268,12 @@ static long cachezoom_ioctl_init(struct file *filep,
   plocal_apic_timer_interrupt = param->param_1;
   timer_interval_tsc = param->param_2;
   target_cpu = param->param_3;
+
+  printk(KERN_INFO "[CZLOG] plapic_next_deadLine=%lx\n", plapic_next_deadLine);
+  printk(KERN_INFO "[CZLOG] plocal_apic_timer_interrupt=%lx\n", plocal_apic_timer_interrupt);
+  printk(KERN_INFO "[CZLOG] timer_interval_tsc=%u\n", timer_interval_tsc);
+  printk(KERN_INFO "[CZLOG] target_cpu=%u\n", target_cpu);
+
   return 0;
 }
 
@@ -317,6 +333,7 @@ static struct miscdevice cachezoom_miscdev = {
   .minor = MISC_DYNAMIC_MINOR,
   .name = "cachezoom",
   .fops = &cachezoom_fops,
+  .mode = 0666,
 };
 
 

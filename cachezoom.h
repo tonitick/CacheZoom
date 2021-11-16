@@ -21,15 +21,18 @@
       printf("IOCTL failed %d\n", errno);\
       return -1;\
     }\
+    printf("IOCTL CACHEZOOM_IOCTL_INIT success\n");\
   } while(0);\
 })
 
 #define INSTALL_TIMER()({\
   do {\  
+    printf("try to do ioctl CACHEZOOM_IOCTL_INSTALL_TIMER\n"); \
     if(ioctl(_FD_, CACHEZOOM_IOCTL_INSTALL_TIMER, &param)) {\
       printf("IOCTL failed %d\n", errno);\
       return -1;\
     }\
+    printf("IOCTL CACHEZOOM_IOCTL_INSTALL_TIMER success\n");\
   } while(0);\
 })
 
@@ -39,12 +42,14 @@
       printf("IOCTL failed %d\n", errno);\
       return -1;\
     }\
+    printf("IOCTL CACHEZOOM_IOCTL_UNINSTALL_TIMER success\n");\
   } while(0);\
 })
 
 
 #define TEST_CACHEZOOM()({\
   do {\
+    printf("try to do ioctl CACHEZOOM_IOCTL_TEST\n"); \
     if(ioctl(_FD_, CACHEZOOM_IOCTL_TEST, &param)) {\
       printf("IOCTL failed %d\n", errno);\
       return -1;\

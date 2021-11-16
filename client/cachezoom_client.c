@@ -37,13 +37,16 @@ int main(int argc, char * argv[])
       }
       INIT_CACHEZOOM(strtoull(argv[2], NULL, 16), strtoull(argv[3], NULL, 16), atoi(argv[4]), atoi(argv[5]));
       break;
-    case 1:      
+    case 1:
+      printf("client main: INSTALL_TIMER\n");
       INSTALL_TIMER();
       break;
     case 2:
+      printf("client main: UNINSTALL_TIMER\n");
       UNINSTALL_TIMER();
       break;
    case 3:
+      printf("client main: TEST_CACHEZOOM\n");
       TEST_CACHEZOOM();
       break;
     default:
