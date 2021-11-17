@@ -157,7 +157,7 @@ int file_write(struct file* file, unsigned long long offset, unsigned char* data
 void write_down_measurements(void)
 {
   struct file * fp;
-  fp = file_open("../../data/samples.data", O_WRONLY|O_CREAT, 0644);
+  fp = file_open("samples.data", O_WRONLY|O_CREAT, 0644);
   file_write(fp, 0, measurements, sizeof(Measurement) * MAX_MEASUREMENT);
   vfs_fsync(fp, 0);
   filp_close(fp, NULL);

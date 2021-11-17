@@ -16,7 +16,7 @@ def export_csv_line(f_csv, values):
 
 
 sample_files = []
-for f in glob.iglob('archive/gladman/*.data'):
+for f in glob.iglob('*.data'):
   sample_files.append(f)
 
 
@@ -24,6 +24,7 @@ for f in sample_files:
 	csv_path = f[0:-4]+'csv'
 	f_raw = open(f, 'r')
 	f_csv = open(csv_path, 'w+')
+	print csv_path
 	for i in xrange(MAX_MEASUREMENT):  
 		data = f_raw.read(64)
 		export_csv_line(f_csv, map(ord, data))
