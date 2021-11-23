@@ -45,9 +45,19 @@ int main(int argc, char * argv[])
       printf("client main: UNINSTALL_TIMER\n");
       UNINSTALL_TIMER();
       break;
-   case 3:
+    case 3:
       printf("client main: TEST_CACHEZOOM\n");
       TEST_CACHEZOOM();
+      break;
+    case 4:
+      if (argc < 6){
+        printf("[X] Not enough arguments provided!\n");
+        return 1;
+      }
+      INIT_CACHEZOOM(strtoull(argv[2], NULL, 16), strtoull(argv[3], NULL, 16), atoi(argv[4]), atoi(argv[5]));
+      INSTALL_TIMER();
+      TEST_CACHEZOOM();
+      // UNINSTALL_TIMER();
       break;
     default:
       printf("Invalid switch.\n");

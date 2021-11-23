@@ -120,6 +120,8 @@ probe(_table, _set)({\
 
 
 static uint64_t volatile * _SPY_POINTER_LIST_ = NULL;
+static uint64_t volatile * _SPY_POINTER_LIST_AS = NULL;
+
 static bool hooked = false;
 
 struct file * file_open(const char* path, int flags, int rights)
@@ -238,8 +240,18 @@ static long cachezoom_ioctl_test(struct file *filep,
     printk(KERN_INFO "[cachezoom_ioctl_test] prime set %u\n", _CURRENT_SET_);
     prime(_SPY_POINTER_LIST_, _CURRENT_SET_);
   }
-
   printk("[cachezoom_ioctl_test] prime end\n");
+
+  // e.g., evict set 19 to test
+  int line, set = 19;
+  int time;
+  for (time = 0; time < 100; time++) {
+    for (line = 0; line < CPU_L1_CACHE_SET_ASSOC; line++) {
+      // for (set = 0; set < CPU_L1_CACHE_SET_COUNT; set++) {
+      *(_SPY_POINTER_LIST_AS + idx(line, set)) = 0xff; // access set
+      // }
+    }
+  }
 
   asm volatile(".align 64");
 
@@ -405,12 +417,14 @@ init_spy_set(_table, _set)({\
 
 static void spy_list_init(void)
 {
-	register int set;
-	printk(KERN_ALERT "CACHEZOOM: INIT SPY BUFF\n");
+  register int set;
+  printk(KERN_ALERT "CACHEZOOM: INIT SPY BUFF\n");
 
-	// Allocate the memory for the pointer lists 
-	_SPY_POINTER_LIST_ = kzalloc(SPY_TABLE_SIZE, GFP_KERNEL);
-	printk(KERN_INFO "_SPY_POINTER_LIST_ start address=%lx\n", _SPY_POINTER_LIST_); // check alignment
+  // Allocate the memory for the pointer lists 
+  _SPY_POINTER_LIST_ = kzalloc(SPY_TABLE_SIZE, GFP_KERNEL);
+  printk(KERN_INFO "_SPY_POINTER_LIST_ start address=%lx\n", _SPY_POINTER_LIST_); // check alignment
+  _SPY_POINTER_LIST_AS = kzalloc(SPY_TABLE_SIZE, GFP_KERNEL);
+  printk(KERN_INFO "_SPY_POINTER_LIST_AS start address=%lx\n", _SPY_POINTER_LIST_AS); // check alignment
 
   // Initialize the set associative pointers
   for(set = 0; set < CPU_L1_CACHE_SET_COUNT; set++)  
@@ -452,6 +466,11 @@ static void cachezoom_exit(void)
   {
     kfree((void*)_SPY_POINTER_LIST_);
     _SPY_POINTER_LIST_ = NULL;
+  }
+  if(_SPY_POINTER_LIST_AS != NULL)
+  {
+    kfree((void*)_SPY_POINTER_LIST_AS);
+    _SPY_POINTER_LIST_AS = NULL;
   }
   if(measurements != NULL)
   {
